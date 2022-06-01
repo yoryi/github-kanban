@@ -102,7 +102,7 @@ export const Board = () => {
           </div>
         ) : (
           <>
-            {Object.keys(state?.columns).map((key) => (
+            {Object.keys(state?.columns ?? []).map((key) => (
               <Column
                 status={key as Status}
                 issues={state.columns[key]}
