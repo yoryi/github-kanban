@@ -11,7 +11,7 @@ import { useLocalStorage } from "../../hooks";
 export const RepoForm = () => {
   const { state } = useRepoContext();
   const [, setCurrentRepo] = useLocalStorage("curren_repo", "");
-  const [repoUrl, setRepoUrl] = useState(state.repoUrl);
+  const [repoUrl, setRepoUrl] = useState(state?.repoUrl ?? "");
 
   const { dispatch } = useRepoContext();
 

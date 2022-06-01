@@ -96,7 +96,7 @@ export const Board = () => {
           minHeight: "calc(100vh - 150px)",
         }}
       >
-        {state.loading ? (
+        {state?.loading ? (
           <div className="d-flex justify-content-center align-items-center">
             <Spinner animation="border" />
           </div>
