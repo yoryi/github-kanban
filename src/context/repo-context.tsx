@@ -131,7 +131,7 @@ export const RepoContextProvider = ({ children }: RepoContextProviderProps) => {
         },
       });
     }
-  }, [state, storedState, setStorage]);
+  }, [state]);
 
   const value = useMemo(() => ({ state, dispatch }), [state]);
 
