@@ -122,16 +122,16 @@ export const RepoContextProvider = ({ children }: RepoContextProviderProps) => {
   const [storedRepo] = useLocalStorage("curren_repo", "");
   const [state, dispatch] = useReducer(repoReducer, storedState[storedRepo]);
 
-  useEffect(
-    () =>
+  useEffect(() => {
+    if (state?.repoUrl) {
       setStorage({
         ...storedState,
         [state.repoUrl]: {
           ...state,
         },
-      }),
-    [state, storedState, setStorage]
-  );
+      });
+    }
+  }, [state, storedState, setStorage]);
 
   const value = useMemo(() => ({ state, dispatch }), [state]);
 
