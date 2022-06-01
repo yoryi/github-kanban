@@ -7,7 +7,7 @@ export const Nav = () => {
   const { state } = useRepoContext();
 
   const paths = useMemo(() => {
-    const repoInfo = getGithubInfo(state.repoUrl);
+    const repoInfo = getGithubInfo(state?.repoUrl ?? "");
 
     if (repoInfo.isValid) {
       return [
