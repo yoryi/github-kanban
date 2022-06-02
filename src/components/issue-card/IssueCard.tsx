@@ -1,36 +1,39 @@
 import Card from "react-bootstrap/Card";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { Draggable } from "react-beautiful-dnd";
 
 import { Issue } from "../../types";
 import { timeAgo } from "../../utils/time";
 
 type IssueCardProps = {
   issue: Issue;
+  index: number;
 };
 
-export const IssueCard = ({ issue }: IssueCardProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: issue?.id });
-
+export const IssueCard = ({ issue, index }: IssueCardProps) => {
   return (
-    <Card
-      className="p-2 border-0"
-      style={{
-        cursor: "pointer",
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
+    <Draggable
+      key={`issue_${issue.id}_${issue.number}`}
+      draggableId={`${issue.id}`}
+      index={index}
     >
-      <Card.Title className="fs-6 mb-2">{issue?.title}</Card.Title>
-      <Card.Subtitle className="text-secondary">{`#${
-        issue?.number
-      } opened ${timeAgo(issue?.created_at)} by ${
-        issue?.user.login
-      }`}</Card.Subtitle>
-    </Card>
+      {(dragProvided, dragSnapshot) => (
+        <Card
+          className="p-2 border-0"
+          style={{
+            cursor: "pointer",
+          }}
+          ref={dragProvided.innerRef}
+          {...dragProvided.draggableProps}
+          {...dragProvided.dragHandleProps}
+        >
+          <Card.Title className="fs-6 mb-2">{issue?.title}</Card.Title>
+          <Card.Subtitle className="text-secondary">
+            {`#${issue?.number} opened ${timeAgo(issue?.created_at)} by ${
+              issue?.user.login
+            }`}
+          </Card.Subtitle>
+        </Card>
+      )}
+    </Draggable>
   );
 };

@@ -7,6 +7,7 @@ import {
   insertAtIndex,
   isEmpty,
   removeAtIndex,
+  reorder,
 } from "../utils/array";
 import { getGithubInfo } from "../utils/github";
 
@@ -38,6 +39,13 @@ type Action =
         targetId: number;
         currentId: number;
       };
+    }
+  | {
+      type: "moveColumn";
+      payload: {
+        source: number;
+        destination: number;
+      };
     };
 
 type Dispatch = (action: Action) => void;
@@ -45,6 +53,7 @@ type State = {
   issues: Issue[];
   repoUrl: string;
   loading: boolean;
+  ordered: Status[];
   columns: {
     [key: string]: number[];
   };
@@ -105,6 +114,16 @@ const repoReducer = (state: State, action: Action): State => {
         };
       }
 
+    case "moveColumn":
+      return {
+        ...state,
+        ordered: reorder(
+          [...state.ordered],
+          action.payload.source,
+          action.payload.destination
+        ),
+      };
+
     case "setRepoUrl":
       return {
         ...state,
@@ -116,9 +135,8 @@ const repoReducer = (state: State, action: Action): State => {
         loading: action.payload.loading,
       };
     case "moveIssue":
-      const itemToMove = state.columns[action.payload.currentStatus].filter(
-        (_item, index) => index === action.payload.currentId
-      )[0];
+      const itemToMove =
+        state.columns[action.payload.currentStatus][action.payload.currentId];
 
       if (action.payload.currentStatus === action.payload.targetStatus) {
         return {
@@ -163,17 +181,18 @@ export const RepoContextProvider = ({ children }: RepoContextProviderProps) => {
     repoUrl: "",
     loading: false,
     columns: {},
+    ordered: ["backlog", "in_progress", "completed"],
   });
 
   useEffect(() => {
     if (state?.repoUrl) {
       const repoInfo = getGithubInfo(state.repoUrl);
-      const { issues, ...columns } = state;
+      const { issues, ...tempState } = state;
 
       setStorage({
         ...storedState,
         [`${repoInfo.user}_${repoInfo.repo}`]: {
-          ...columns,
+          ...tempState,
         },
       });
     }
