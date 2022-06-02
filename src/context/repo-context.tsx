@@ -69,16 +69,27 @@ const repoReducer = (state: State, action: Action): State => {
         window.localStorage.getItem("repo_state") || "{}"
       );
 
-      console.log(action.payload.repo_key);
       const storedColumns = repoData?.[action.payload.repo_key]?.columns;
 
-      console.log(storedColumns);
-
       if (storedColumns && !isEmpty(storedColumns)) {
+        const allIssues = Object.keys(storedColumns)
+          .map((key) => storedColumns[key])
+          .flat();
+
+        const newIssues = action.payload.issues
+          .filter(
+            (_issue) =>
+              !allIssues.includes(_issue.number) && _issue.state === "open"
+          )
+          .map((_issue) => _issue.number);
+
         return {
           ...state,
           issues: action.payload.issues,
-          columns: storedColumns,
+          columns: {
+            ...storedColumns,
+            backlog: [...newIssues, ...storedColumns.backlog],
+          },
         };
       } else {
         return {
