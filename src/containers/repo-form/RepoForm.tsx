@@ -1,4 +1,11 @@
-import { useState, useCallback, ChangeEvent, useMemo, FormEvent } from "react";
+import {
+  useState,
+  useCallback,
+  ChangeEvent,
+  useMemo,
+  FormEvent,
+  useEffect,
+} from "react";
 
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -9,11 +16,9 @@ import { useRepoContext } from "../../context";
 import { useLocalStorage } from "../../hooks";
 
 export const RepoForm = () => {
-  const { state } = useRepoContext();
+  const { state, dispatch } = useRepoContext();
   const [, setCurrentRepo] = useLocalStorage("curren_repo", "");
   const [repoUrl, setRepoUrl] = useState(state?.repoUrl ?? "");
-
-  const { dispatch } = useRepoContext();
 
   const onChangeHandler = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +56,7 @@ export const RepoForm = () => {
           dispatch({
             type: "setIssues",
             payload: {
+              repo_key: `${githubInfo.user}_${githubInfo.repo}`,
               issues: result,
             },
           });

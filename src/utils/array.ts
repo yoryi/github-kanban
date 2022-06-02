@@ -15,3 +15,10 @@ export const arrayMove = (
 ) => {
   return dndKitArrayMove(array, oldIndex, newIndex);
 };
+
+export const isEmpty = (object: any) => {
+  for (const property in object) {
+    return false;
+  }
+  return true;
+};

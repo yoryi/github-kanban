@@ -15,7 +15,7 @@ import Spinner from "react-bootstrap/Spinner";
 
 import { Column } from "../../components/column";
 import { useRepoContext } from "../../context";
-import { Status } from "../../types";
+import { Status, Issue } from "../../types";
 
 export const Board = () => {
   const sensors = useSensors(
@@ -105,7 +105,11 @@ export const Board = () => {
             {Object.keys(state?.columns ?? []).map((key) => (
               <Column
                 status={key as Status}
-                issues={state.columns[key]}
+                issues={
+                  state.columns[key].map((_issueNum) =>
+                    state?.issues?.find((_issue) => _issue.number === _issueNum)
+                  ) as Issue[]
+                }
                 key={key}
               />
             ))}

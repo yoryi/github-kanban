@@ -2,12 +2,19 @@ import React, { useMemo, useReducer, useContext, useEffect } from "react";
 import { useLocalStorage } from "../hooks";
 
 import { Issue, Status } from "../types";
-import { arrayMove, insertAtIndex, removeAtIndex } from "../utils/array";
+import {
+  arrayMove,
+  insertAtIndex,
+  isEmpty,
+  removeAtIndex,
+} from "../utils/array";
+import { getGithubInfo } from "../utils/github";
 
 type Action =
   | {
       type: "setIssues";
       payload: {
+        repo_key: string;
         issues: Issue[];
       };
     }
@@ -35,10 +42,11 @@ type Action =
 
 type Dispatch = (action: Action) => void;
 type State = {
+  issues: Issue[];
   repoUrl: string;
   loading: boolean;
   columns: {
-    [key: string]: Issue[];
+    [key: string]: number[];
   };
 };
 
@@ -57,16 +65,35 @@ type RepoContextProviderProps = {
 const repoReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "setIssues":
-      return {
-        ...state,
-        columns: {
-          backlog: action.payload.issues.filter(
-            (_issue) => _issue.state === "open"
-          ),
-          in_progress: [],
-          completed: [],
-        },
-      };
+      const repoData = JSON.parse(
+        window.localStorage.getItem("repo_state") || "{}"
+      );
+
+      console.log(action.payload.repo_key);
+      const storedColumns = repoData?.[action.payload.repo_key]?.columns;
+
+      console.log(storedColumns);
+
+      if (storedColumns && !isEmpty(storedColumns)) {
+        return {
+          ...state,
+          issues: action.payload.issues,
+          columns: storedColumns,
+        };
+      } else {
+        return {
+          ...state,
+          issues: action.payload.issues,
+          columns: {
+            backlog: action.payload?.issues
+              .filter((_issue) => _issue.state === "open")
+              .map((_issue) => _issue.number),
+            in_progress: [],
+            completed: [],
+          },
+        };
+      }
+
     case "setRepoUrl":
       return {
         ...state,
@@ -119,19 +146,27 @@ const repoReducer = (state: State, action: Action): State => {
 
 export const RepoContextProvider = ({ children }: RepoContextProviderProps) => {
   const [storedState, setStorage] = useLocalStorage("repo_state", {});
-  const [storedRepo] = useLocalStorage("curren_repo", "");
-  const [state, dispatch] = useReducer(repoReducer, storedState[storedRepo]);
+
+  const [state, dispatch] = useReducer(repoReducer, {
+    issues: [],
+    repoUrl: "",
+    loading: false,
+    columns: {},
+  });
 
   useEffect(() => {
     if (state?.repoUrl) {
+      const repoInfo = getGithubInfo(state.repoUrl);
+      const { issues, ...columns } = state;
+
       setStorage({
         ...storedState,
-        [state.repoUrl]: {
-          ...state,
+        [`${repoInfo.user}_${repoInfo.repo}`]: {
+          ...columns,
         },
       });
     }
-  }, [state]);
+  }, [state.issues, state.columns]);
 
   const value = useMemo(() => ({ state, dispatch }), [state]);
 
